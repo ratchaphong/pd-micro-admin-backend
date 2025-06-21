@@ -1,0 +1,25 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["product"] // 👈 SCHEMA ของ product
+}
+
+model Product {
+  id          String    @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  status      String // ACTIVE / INACTIVE
+  createdAt   DateTime  @default(now())
+  userId      String // 👈 เพิ่มตรงนี้ (soft FK)
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+  image       String?
+
+  @@schema("product") // 👈 กำหนด schema ให้ model นี้
+}
