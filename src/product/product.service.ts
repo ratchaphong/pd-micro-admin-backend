@@ -61,22 +61,20 @@ export class ProductService {
 
     return this.prisma.product.findMany({
       where: {
-        OR: [
-          { name: { contains: search, mode: 'insensitive' } },
-          { description: { contains: search, mode: 'insensitive' } },
+        AND: [
+          {
+            OR: [
+              { name: { contains: search, mode: 'insensitive' } },
+              { description: { contains: search, mode: 'insensitive' } },
+            ],
+          },
+          { isDeleted: false },
         ],
-        isDeleted: false,
       },
       orderBy: { [orderBy]: order },
       skip,
       take,
     });
-    // WHERE
-    // LOWER("name") LIKE '%phone%' OR
-    // LOWER("description") LIKE '%phone%'
-    // ORDER BY "price" ASC
-    // OFFSET 10
-    // LIMIT 5;
   }
 
   async getProductsForSale(
