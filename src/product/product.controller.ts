@@ -30,6 +30,7 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { SearchProductDto } from './dto/search-product.dto';
 import { DeleteProductResponseDto } from './dto/delete-product-response.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { PublicProductQueryDto } from './dto/public-product-query.dto';
 
 @ApiTags('products')
 @Controller('products')
@@ -100,6 +101,19 @@ export class ProductController {
       take: limit,
     });
 
+    return products.map((p) => plainToInstance(ProductEntity, p));
+  }
+
+  @Get('public')
+  @ApiOperation({ summary: 'Get products for public sale' })
+  @ApiOkResponse({
+    description: 'List of products for sale',
+    type: ProductEntity,
+    isArray: true,
+  })
+  async getPublicProducts(@Query() query: PublicProductQueryDto) {
+    const { sortMode = 'fifo', limit = 20 } = query;
+    const products = await this.service.getProductsForSale(sortMode, limit);
     return products.map((p) => plainToInstance(ProductEntity, p));
   }
 

@@ -65,6 +65,7 @@ export class ProductService {
           { name: { contains: search, mode: 'insensitive' } },
           { description: { contains: search, mode: 'insensitive' } },
         ],
+        isDeleted: false,
       },
       orderBy: { [orderBy]: order },
       skip,
@@ -76,6 +77,42 @@ export class ProductService {
     // ORDER BY "price" ASC
     // OFFSET 10
     // LIMIT 5;
+  }
+
+  async getProductsForSale(
+    sortMode: 'fifo' | 'lifo' | 'fefo' | 'newest' | 'price-asc' | 'price-desc',
+    limit: number,
+  ) {
+    let orderBy: any;
+
+    switch (sortMode) {
+      case 'lifo': // Last In First Out - สินค้าที่ “เพิ่มล่าสุด” (ใหม่สุด) จะถูกแสดงก่อน (หรือขายก่อน)
+      case 'newest':
+        orderBy = { createdAt: 'desc' };
+        break;
+      case 'price-asc':
+        orderBy = { price: 'asc' };
+        break;
+      case 'price-desc':
+        orderBy = { price: 'desc' };
+        break;
+      case 'fefo': // First Expired First Out – เรียงตามวันหมดอายุ
+        orderBy = { price: 'expirationDate' };
+        break;
+      case 'fifo': // First In First Out – เรียงตามวันที่เพิ่มสินค้า
+      default:
+        orderBy = { createdAt: 'asc' };
+        break;
+    }
+
+    return this.prisma.product.findMany({
+      where: {
+        isDeleted: false,
+        status: 'ACTIVE',
+      },
+      orderBy,
+      take: limit,
+    });
   }
 
   async findOne(id: string) {
