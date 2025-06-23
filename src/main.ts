@@ -3,30 +3,41 @@ import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
+  // 🛡️ สร้างแอป
   const app = await NestFactory.create(AppModule);
+
+  // 🧠 กำหนดขนาด body สูงสุด เช่น 10MB (ป้องกัน 413 Request Entity Too Large)
+  app.use(bodyParser.json({ limit: '10mb' }));
+  app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
+
+  // 🌍 เปิด CORS
   app.enableCors({
     origin: '*',
     credentials: true,
   });
+
+  // 🛠️ โหลด ENV
   const configService = app.get(ConfigService);
 
-  // ✅ Swagger
-  const config = new DocumentBuilder()
+  // 📘 Swagger Setup
+  const swaggerConfig = new DocumentBuilder()
     .setTitle('Product Service')
     .setDescription('API for managing products')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
-  const document = SwaggerModule.createDocument(app, config);
+
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, document, {
     swaggerOptions: {
       persistAuthorization: true,
     },
   });
 
-  // ✅ RabbitMQ
+  // 🐇 RabbitMQ Microservice
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
@@ -38,9 +49,11 @@ async function bootstrap() {
     },
   });
 
+  // ✅ Start microservice + API
   await app.startAllMicroservices();
-
   const port = configService.get<number>('PORT') ?? 3002;
-  await app.listen(port, '0.0.0.0'); // ✅ listen ทุก IP (local + docker)
+  await app.listen(port, '0.0.0.0');
+
+  console.log(`🚀 Product Service is running on port ${port}`);
 }
 bootstrap();
