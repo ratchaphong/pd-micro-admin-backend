@@ -95,7 +95,7 @@ export class ProductService {
         orderBy = { price: 'desc' };
         break;
       case 'fefo': // First Expired First Out – เรียงตามวันหมดอายุ
-        orderBy = { price: 'expirationDate' };
+        // orderBy = { expirationDate: 'asc' };
         break;
       case 'fifo': // First In First Out – เรียงตามวันที่เพิ่มสินค้า
       default:

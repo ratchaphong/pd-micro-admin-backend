@@ -112,7 +112,8 @@ export class ProductController {
     isArray: true,
   })
   async getPublicProducts(@Query() query: PublicProductQueryDto) {
-    const { sortMode = 'fifo', limit = 20 } = query;
+    const sortMode = query.sortMode || 'fifo';
+    const limit = Number(query.limit || 10);
     const products = await this.service.getProductsForSale(sortMode, limit);
     return products.map((p) => plainToInstance(ProductEntity, p));
   }
